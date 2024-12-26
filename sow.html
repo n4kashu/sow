@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stamp Of The Week</title>
+    <style>
+        :root {
+            --neon-green: #39ff14;
+            --neon-green-dim: #1a7f0a;
+            --cyber-black: #0a0a0a;
+            --cyber-gray: #1a1a1a;
+            --glow-effect: 0 0 10px var(--neon-green);
+            --glow-effect-strong: 0 0 20px var(--neon-green);
+            --text-glow: 0 0 5px var(--neon-green);
+        }
+        
+        body {
+            background-color: var(--cyber-black);
+            color: var(--neon-green);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .frame {
+            border: 2px solid var(--neon-green);
+            margin: 20px;
+            padding: 20px;
+            background: var(--cyber-gray);
+            box-shadow: var(--glow-effect);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .numbered-boxes {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--neon-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--neon-green);
+            text-shadow: var(--text-glow);
+            background: rgba(57, 255, 20, 0.05);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: var(--glow-effect);
+        }
+
+        .box img, .box iframe {
+            width: 100%;
+            height: 100%;
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .box.dragover {
+            border-color: var(--neon-green);
+            box-shadow: var(--glow-effect-strong);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .grid-item {
+            border: 1px solid var(--neon-green);
+            padding: 15px;
+            text-align: center;
+            background: var(--cyber-gray);
+            border-radius: 8px;
+            box-shadow: var(--glow-effect);
+            transition: all 0.3s ease;
+            cursor: grab;
+            user-select: none;
+            overflow: hidden;
+            width: 200px;
+            height: auto;
+            margin: 0 auto;
+        }
+
+        .grid-item:hover {
+            box-shadow: var(--glow-effect-strong);
+        }
+
+        .grid-item img, .grid-item iframe {
+            width: 100%;
+            height: 100%;
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--neon-green);
+            text-align: left;
+            padding: 10px;
+            border-top: 1px solid var(--neon-green);
+        }
+
+        .report-section {
+            padding: 20px;
+            margin: 20px;
+            background: var(--cyber-gray);
+            border: 2px solid var(--neon-green);
+            box-shadow: var(--glow-effect);
+        }
+
+        .report-output {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            font-family: monospace;
+            font-size: 16px;
+            line-height: 1.5;
+            text-shadow: var(--text-glow);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-container input, .filter-container button {
+            padding: 8px 16px;
+            background: var(--cyber-black);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-container input:focus {
+            outline: none;
+            box-shadow: var(--glow-effect);
+        }
+
+        .filter-container button {
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filter-container button:hover {
+            background: var(--neon-green);
+            color: var(--cyber-black);
+            box-shadow: var(--glow-effect-strong);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--text-glow);
+        }
+
+        .error-message {
+            color: var(--neon-green);
+            text-align: center;
+            padding: 20px;
+            border: 1px solid var(--neon-green);
+            margin: 20px;
+            text-shadow: var(--text-glow);
+        }
+
+        @media (max-width: 1200px) {
+            .grid-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            .grid-item, .box {
+                width: 200px;
+                height: 200px;
+            }
+            .grid-item img, .grid-item iframe, .box img, .box iframe {
+                max-width: 200px;
+                max-height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            .grid-item, .box {
+                width: 200px;
+                height: 200px;
+            }
+            .grid-item img, .grid-item iframe, .box img, .box iframe {
+                max-width: 200px;
+                max-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="frame">
+        <div class="numbered-boxes" id="target-boxes">
+            <div class="box" data-box-id="1">1</div>
+            <div class="box" data-box-id="2">2</div>
+            <div class="box" data-box-id="3">3</div>
+        </div>
+    </div>
+
+    <div class="frame report-section">
+        <div id="report" class="report-output">
+            <p>Selected Stamps:</p>
+            <p>1: Empty</p>
+            <p>2: Empty</p>
+            <p>3: Empty</p>
+        </div>
+    </div>
+
+    <div class="frame">
+        <div class="filter-container">
+            <label>From: <input type="datetime-local" id="dateFrom"></label>
+            <label>To: <input type="datetime-local" id="dateTo"></label>
+            <button onclick="applyFilters()">Apply Filters</button>
+            <button onclick="clearFilters()">Clear Filters</button>
+        </div>
+        <div class="grid-container" id="grid">
+            <div class="loading">Loading stamps...</div>
+        </div>
+    </div>
+
+    <script>
+        let allStamps = [];
+        let targetBoxes = {};
+
+        function updateReport() {
+            const report = document.getElementById('report');
+            let reportHtml = '<p>Selected Stamps:</p>';
+            
+            for (let i = 1; i <= 3; i++) {
+                const stamp = targetBoxes[i];
+                reportHtml += `<p>${i}: ${stamp ? stamp.cpid : 'Empty'}</p>`;
+            }
+            
+            report.innerHTML = reportHtml;
+        }
+
+        // Initialize drop zones
+        document.querySelectorAll('.box').forEach(box => {
+            box.addEventListener('dragover', e => {
+                e.preventDefault();
+                box.classList.add('dragover');
+            });
+
+            box.addEventListener('dragleave', () => {
+                box.classList.remove('dragover');
+            });
+
+            box.addEventListener('drop', e => {
+                e.preventDefault();
+                box.classList.remove('dragover');
+                
+                const stampIndex = e.dataTransfer.getData('text/plain');
+                const stamp = allStamps[stampIndex];
+                if (!stamp) return;
+
+                // Clear existing content except number
+                box.innerHTML = box.dataset.boxId;
+
+                // Create and add new content
+                if (stamp.stamp_mimetype?.includes('image')) {
+                    const img = document.createElement('img');
+                    img.src = stamp.stamp_url;
+                    img.alt = `Stamp by ${stamp.creator}`;
+                    box.appendChild(img);
+                } else if (stamp.stamp_mimetype?.includes('html')) {
+                    const iframe = document.createElement('iframe');
+                    iframe.sandbox = 'allow-scripts allow-same-origin';
+                    
+                    fetch(stamp.stamp_url)
+                        .then(response => response.text())
+                        .then(html => {
+                            iframe.srcdoc = html;
+                        })
+                        .catch(error => {
+                            iframe.srcdoc = `<div style="color: red; padding: 10px;">Error loading HTML content: ${error.message}</div>`;
+                        });
+                    
+                    box.appendChild(iframe);
+                }
+
+                targetBoxes[box.dataset.boxId] = stamp;
+                updateReport();
+            });
+        });
+
+        function displayStamps(stamps) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            stamps.forEach((stamp, index) => {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.draggable = true;
+                item.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', index.toString());
+                    item.classList.add('dragging');
+                });
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                });
+
+                if (stamp.stamp_mimetype?.includes('image')) {
+                    const img = document.createElement('img');
+                    img.src = stamp.stamp_url;
+                    img.alt = `Stamp by ${stamp.creator}`;
+                    img.draggable = false;
+                    img.onerror = () => {
+                        img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif">Image Error</text></svg>';
+                    };
+                    item.appendChild(img);
+                } else if (stamp.stamp_mimetype?.includes('html')) {
+                    const iframe = document.createElement('iframe');
+                    iframe.sandbox = 'allow-scripts allow-same-origin';
+                    
+                    fetch(stamp.stamp_url)
+                        .then(response => response.text())
+                        .then(html => {
+                            iframe.srcdoc = html;
+                        })
+                        .catch(error => {
+                            iframe.srcdoc = `<div style="color: red; padding: 10px;">Error loading HTML content: ${error.message}</div>`;
+                        });
+                    
+                    item.appendChild(iframe);
+                }
+
+                const info = document.createElement('div');
+                info.className = 'info';
+                info.innerHTML = `
+                    <p><strong>CPID:</strong> ${stamp.cpid || 'N/A'}</p>
+                    <p><strong>Creator:</strong> ${stamp.creator || 'Unknown'}</p>
+                    <p><strong>Time:</strong> ${new Date(stamp.block_time).toLocaleString()}</p>
+                `;
+                item.appendChild(info);
+
+                grid.appendChild(item);
+            });
+        }
+
+        function applyFilters() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            
+            let filteredStamps = [...allStamps];
+            
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                fromDate.setSeconds(0, 0); // Reset seconds and milliseconds
+                filteredStamps = filteredStamps.filter(stamp => {
+                    const stampDate = new Date(stamp.block_time);
+                    return stampDate >= fromDate;
+                });
+            }
+            
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                toDate.setHours(23, 59, 59, 999); // Set to end of day
+                filteredStamps = filteredStamps.filter(stamp => {
+                    const stampDate = new Date(stamp.block_time);
+                    return stampDate <= toDate;
+                });
+            }
+            
+            displayStamps(filteredStamps);
+        }
+
+        function clearFilters() {
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            displayStamps(allStamps);
+        }
+
+        // Initialize date inputs with current week range
+        function initializeDateFilters() {
+            const now = new Date();
+            const lastWeek = new Date(now);
+            lastWeek.setDate(now.getDate() - 21);
+            
+            // Format dates for datetime-local input
+            const formatDate = (date) => {
+                return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+            };
+
+            document.getElementById('dateFrom').value = formatDate(lastWeek);
+            document.getElementById('dateTo').value = formatDate(now);
+        }
+
+        async function fetchStamps() {
+            const grid = document.getElementById('grid');
+            try {
+                const response = await fetch('https://stampchain.io/api/v2/stamps?limit=200&page=1&sort=DESC');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const result = await response.json();
+                
+                if (result && result.data && Array.isArray(result.data)) {
+                    allStamps = result.data;
+                    initializeDateFilters(); // Initialize date filters after getting stamps
+                    applyFilters(); // Apply initial filter
+                } else {
+                    throw new Error('Invalid data format received');
+                }
+            } catch (error) {
+                grid.innerHTML = `
+                    <div class="error-message">
+                        <p>Error loading stamps: ${error.message}</p>
+                        <button onclick="fetchStamps()">Retry</button>
+                    </div>
+                `;
+                console.error('Error fetching stamps:', error);
+            }
+        }
+
+        // Add event listeners for date inputs
+        document.getElementById('dateFrom').addEventListener('change', applyFilters);
+        document.getElementById('dateTo').addEventListener('change', applyFilters);
+
+        fetchStamps();
+    </script>
+</body>
+</html>
